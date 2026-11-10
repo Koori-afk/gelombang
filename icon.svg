@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Gelombang</title>
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="22%" r="95%">
+      <stop offset="0" stop-color="#4A2F22"/>
+      <stop offset="1" stop-color="#1E1511"/>
+    </radialGradient>
+    <linearGradient id="wv" x1="0" x2="1">
+      <stop offset="0" stop-color="#E0A458"/>
+      <stop offset="1" stop-color="#F3D9A8"/>
+    </linearGradient>
+  </defs>
+  <!-- Latar penuh (aman untuk ikon maskable: isi utama di dalam lingkaran 80%) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- Piringan hitam -->
+  <circle cx="256" cy="256" r="190" fill="#120C09"/>
+  <g fill="none" stroke="#F3E6D3" stroke-opacity=".10" stroke-width="2">
+    <circle cx="256" cy="256" r="176"/><circle cx="256" cy="256" r="156"/>
+    <circle cx="256" cy="256" r="136"/><circle cx="256" cy="256" r="116"/>
+    <circle cx="256" cy="256" r="96"/>
+  </g>
+  <!-- Kilau -->
+  <path d="M256 66A190 190 0 0 1 421 161L256 256z" fill="#fff" fill-opacity=".05"/>
+  <path d="M256 446A190 190 0 0 1 91 351L256 256z" fill="#fff" fill-opacity=".05"/>
+  <!-- Label terakota -->
+  <circle cx="256" cy="256" r="74" fill="#C4694A"/>
+  <circle cx="256" cy="256" r="74" fill="none" stroke="#E0A458" stroke-width="5"/>
+  <!-- Gelombang suara -->
+  <path d="M96 256Q136 140 176 256T256 256T336 256T416 256" fill="none" stroke="url(#wv)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="9" fill="#1E1511"/>
+</svg>
