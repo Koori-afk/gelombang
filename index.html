@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gelombang – Ruang Dengar</title>
-<meta name="description" content="Pemutar musik pribadi untuk lagu milik Anda sendiri. Tanpa iklan, tanpa pelacak, jalan offline.">
+<meta name="description" content="Pemutar musik pribadi untuk lagu milik kamu sendiri. Tanpa iklan, tanpa pelacak, jalan offline.">
 <meta name="theme-color" content="#F4ECE1">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -619,7 +619,7 @@ const openDB = () => new Promise((res, rej) => {
   };
   r.onsuccess = () => { r.result.onversionchange = () => r.result.close(); res(r.result); };
   r.onerror = () => rej(r.error);
-  r.onblocked = () => toast('Tutup tab Gelombang yang lain agar pembaruan penyimpanan bisa selesai.', { ms: 7000 });
+  r.onblocked = () => toast('Tutup dulu tab Gelombang yang lain ya, biar pembaruan penyimpanannya bisa selesai.', { ms: 7000 });
 });
 const tx = (store, mode, fn) => new Promise((res, rej) => {
   const t = db.transaction(store, mode); const out = fn(t.objectStore(store));
@@ -658,7 +658,7 @@ const S = {
   view: 'home', plOpen: null, q: '', errRun: 0, sleepAt: 0, seed: 1, busy: false, stats: { plays: {}, secs: 0 }, counted: false
 };
 const UNK = 'Artis tidak dikenal';
-const noSong = () => toast('Belum ada lagu yang diputar. Pilih dari Rak Piringan.');
+const noSong = () => toast('Belum ada lagu yang diputar. Pilih satu dari Rak Piringan dulu ya.');
 const audio = $('#audio'), now = $('#now'), rack = $('#rack');
 const fAudio = $('#fAudio'), fDir = $('#fDir'), fJson = $('#fJson');
 const canDir = !isIOS && 'webkitdirectory' in fDir;
@@ -797,13 +797,13 @@ async function makeSong(file) {
   return { id: uid(), title, artist, album: String(t.album || '').trim(), dur, added: Date.now(), name: file.name, size: file.size, type, blob, cover: cv.toDataURL('image/jpeg', .82), dom: domColor(cv), _lyr: lyr };
 }
 async function addFiles(list) {
-  if (S.busy) { toast('Masih menambahkan lagu, tunggu sebentar.'); return; }
+  if (S.busy) { toast('Lagunya masih diproses, tunggu sebentar ya.'); return; }
   const files = [...list].filter(isAudio);
-  if (!files.length) { toast('Tidak ada file audio yang ditemukan.'); return; }
+  if (!files.length) { toast('Belum ketemu file musiknya. Coba pilih folder atau file yang lain.'); return; }
   S.busy = true; let ok = 0, dup = 0, bad = 0;
   const known = new Set(S.songs.map(key));
   for (let i = 0; i < files.length; i++) {
-    const f = files[i]; toast(`Menambahkan ${i + 1} dari ${files.length}…`, { sticky: true });
+    const f = files[i]; toast(`Memasukkan lagu ${i + 1} dari ${files.length}…`, { sticky: true });
     if (known.has(f.name + '|' + f.size)) { dup++; continue; }
     try {
       const s = await makeSong(f); known.add(key(s));
@@ -816,10 +816,10 @@ async function addFiles(list) {
   }
   S.busy = false; renderAll();
   const p = [];
-  if (ok) p.push(`${ok} lagu ditambahkan`);
-  if (dup) p.push(`${dup} sudah ada`);
-  if (bad) p.push(`${bad} dilewati (format tidak didukung atau file rusak)`);
-  toast(p.join(' · ') || 'Tidak ada lagu baru.', { ms: 4200 });
+  if (ok) p.push(`${ok} lagu masuk ke Rak Piringan`);
+  if (dup) p.push(`${dup} sudah ada, dilewati`);
+  if (bad) p.push(`${bad} tidak bisa dibaca (rusak atau formatnya belum didukung)`);
+  toast(p.join(' · ') || 'Tidak ada lagu baru kali ini.', { ms: 4200 });
   if (ok) askPersist();
 }
 async function askPersist() { try { if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch (_) {} }
@@ -856,7 +856,7 @@ async function saveBlob(blob, name) {
   } catch (e) {
     if (e && e.name === 'AbortError') { toast('Penyimpanan dibatalkan'); return false; }
     try { viaAnchor(); toast(`Mencoba mengunduh “${name}”…`); return true; } catch (_) {}
-    toast(`Gagal menyimpan “${name}”. Coba peramban lain.`, { ms: 4500 }); return false;
+    toast(`Gagal menyimpan “${name}”. Coba browser lain.`, { ms: 4500 }); return false;
   }
 }
 const download = (s) => s ? saveBlob(s.blob, s.name) : null;
@@ -888,16 +888,16 @@ const moodSeg = (cls = '') => `<div class="seg ${cls}" role="group" aria-label="
 const moodRow = () => `<div style="margin-top:12px"><span class="cap">Suasana</span>${moodSeg('moods')}</div>`;
 function statsHTML() {
   const top = Object.entries(S.stats.plays).filter(([id]) => S.byId.has(id)).sort((a, b) => b[1] - a[1])[0];
-  if (!top) return `<div class="stat dim">Statistik dengar akan muncul di sini setelah Anda memutar beberapa lagu. Semuanya dihitung di perangkat ini saja.</div>`;
+  if (!top) return `<div class="stat dim">Statistik dengar akan muncul di sini setelah kamu memutar beberapa lagu. Semuanya dihitung di perangkat ini saja.</div>`;
   const t = S.byId.get(top[0]);
   return `<div class="stat"><div><span class="cap">Paling sering diputar</span><b>${esc(t.title)}</b><span class="cap">${top[1]}× diputar · ${esc(t.artist)}</span></div><div><span class="cap">Total waktu dengar</span><b>${durLong(S.stats.secs)}</b><span class="cap">sejak mulai memakai Gelombang</span></div></div>`;
 }
 const sortPills = () => `<div class="seg" role="group" aria-label="Urutkan">${[['new', 'Terbaru'], ['title', 'Judul'], ['artist', 'Artis']].map(([v, l]) => `<button data-act="sort" data-v="${v}" aria-pressed="${cfg.sort === v}">${l}</button>`).join('')}</div>`;
-const addBtns = (big) => `<button class="btn pri ${big ? 'big' : ''}" data-act="add-songs">${ic('plus')}${big ? 'Tambah Lagu dari Perangkat' : 'Tambah Lagu'}</button>${canDir ? `<button class="btn ${big ? 'big' : ''}" data-act="add-dir">${ic('folder')}Tambah Folder</button>` : ''}`;
+const addBtns = (big) => `<button class="btn pri ${big ? 'big' : ''}" data-act="add-songs">${ic('plus')}${big ? 'Tambah Lagu dari Perangkat' : 'Tambah Lagu'}</button>${canDir ? `<button class="btn ${big ? 'big' : ''}" data-act="add-dir">${ic('folder')}Pilih Folder Musik</button>` : ''}`;
 const illus = `<svg class="il" viewBox="0 0 320 190" role="img" aria-label="Piringan hitam dan secangkir kopi"><ellipse cx="160" cy="176" rx="140" ry="9" fill="var(--line)"/><g><circle cx="106" cy="92" r="80" fill="#1b1310"/><g fill="none" stroke="#F3E6D3" stroke-opacity=".12"><circle cx="106" cy="92" r="68"/><circle cx="106" cy="92" r="56"/><circle cx="106" cy="92" r="44"/></g><circle cx="106" cy="92" r="27" fill="#C4694A"/><circle cx="106" cy="92" r="27" fill="none" stroke="#E0A458" stroke-width="2"/><path d="M62 92q10-26 22 0t22 0 22 0 22 0" fill="none" stroke="#F3D9A8" stroke-width="4.500" stroke-linecap="round"/><circle cx="106" cy="92" r="3.500" fill="#1E1511"/></g><g><ellipse cx="232" cy="150" rx="64" ry="12" fill="#E0A458"/><ellipse cx="232" cy="147" rx="58" ry="9.500" fill="#F4ECE1"/><path d="M196 96h72v28a34 34 0 0 1-34 34h-4a34 34 0 0 1-34-34z" fill="#C4694A"/><path d="M268 106h8a14 14 0 0 1 0 28h-10" fill="none" stroke="#C4694A" stroke-width="8"/><ellipse cx="232" cy="96" rx="36" ry="8" fill="#5C3A28"/><ellipse cx="232" cy="96" rx="36" ry="8" fill="none" stroke="#E0A458" stroke-width="2"/><path d="M214 78c-8-9 8-14 0-24M232 76c-8-9 8-14 0-24M250 78c-8-9 8-14 0-24" fill="none" stroke="var(--mute)" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/></g><circle cx="272" cy="40" r="4" fill="#7A8450"/><circle cx="48" cy="22" r="3" fill="#E0A458"/></svg>`;
 function emptyHome() {
   const ios = isIOS && !standalone();
-  return `<div class="empty">${illus}<h2>Rak Piringan masih kosong</h2><p>Tambahkan lagu dari perangkat Anda. Lagu disimpan di sini saja, tidak pernah diunggah ke mana pun.</p>${addBtns(true)}<div class="tip">${ic('info')}<span>${wide.matches ? 'Atau seret file ke jendela ini. ' : ''}Tersedia format MP3, M4A, WAV, FLAC, OGG, AAC, dan OPUS.</span></div>${ios ? `<div class="tip">${ic('phone')}<span>Di iPhone: ketuk <b>Bagikan → Tambah ke Layar Utama</b> agar jalan seperti aplikasi.</span></div>` : ''}</div>`;
+  return `<div class="empty">${illus}<h2>Rak Piringan masih kosong</h2><p>Tambahkan lagu dari perangkatmu. Lagu disimpan di sini saja, tidak pernah diunggah ke mana pun.</p>${addBtns(true)}<div class="tip">${ic('info')}<span>${wide.matches ? 'Atau seret file ke jendela ini. ' : ''}Tersedia format MP3, M4A, WAV, FLAC, OGG, AAC, dan OPUS.</span></div>${ios ? `<div class="tip">${ic('phone')}<span>Di iPhone: ketuk <b>Bagikan → Tambah ke Layar Utama</b> agar jalan seperti aplikasi.</span></div>` : ''}</div>`;
 }
 const smallEmpty = (icon, title, text, btn = '') => `<div class="empty"><span class="ib" style="width:64px;height:64px;background:var(--surface2);color:var(--accent)">${ic(icon)}</span><h2>${title}</h2><p>${text}</p>${btn}</div>`;
 function installChip() {
@@ -923,7 +923,7 @@ function resultsHTML() {
 const viewFind = () => `<header class="hd"><p class="cap">Telusur</p><h1>Cari di Rak Piringan</h1></header><label class="search">${ic('search')}<input id="q" type="search" placeholder="Cari judul, artis, atau album" value="${esc(S.q)}" autocomplete="off" enterkeyhint="search" aria-label="Cari lagu"></label><div class="sec" style="margin-top:6px"><span class="cap">Urutkan</span>${sortPills()}</div><div id="results">${resultsHTML()}</div>`;
 function viewHati() {
   const l = sorted(S.songs.filter((s) => S.fav.has(s.id)));
-  return `<header class="hd"><p class="cap">Koleksi Hati</p><h1>Lagu yang Anda sukai</h1><p class="mute">${l.length} lagu</p></header>${l.length ? `<ul class="list">${l.map(rowHTML).join('')}</ul>` : smallEmpty('heart', 'Belum ada yang disukai', 'Ketuk ikon hati pada lagu mana pun untuk menyimpannya di sini.')}`;
+  return `<header class="hd"><p class="cap">Koleksi Hati</p><h1>Lagu yang kamu sukai</h1><p class="mute">${l.length} lagu</p></header>${l.length ? `<ul class="list">${l.map(rowHTML).join('')}</ul>` : smallEmpty('heart', 'Belum ada yang disukai', 'Ketuk ikon hati pada lagu mana pun untuk menyimpannya di sini.')}`;
 }
 function viewPl() {
   const p = S.plOpen && S.pls.find((x) => x.id === S.plOpen);
@@ -933,10 +933,10 @@ function viewPl() {
     <div class="btns"><button class="btn pri sm" data-act="play-pl">${ic('play')}Putar</button><button class="btn sm" data-act="shuf-pl">${ic('shuffle')}Acak</button><button class="btn sm" data-act="ren-pl">${ic('edit')}Ubah nama</button><button class="btn sm" data-act="exp-pl">${ic('download')}Ekspor .m3u</button><button class="btn sm" data-act="del-pl" style="color:var(--danger)">${ic('trash')}Hapus</button></div></header>
     ${l.length ? `<ul class="list">${l.map(rowHTML).join('')}</ul>` : smallEmpty('list', 'Playlist masih kosong', 'Buka menu ⋮ pada sebuah lagu, lalu pilih “Tambah ke playlist”.')}`;
   }
-  return `<header class="hd"><p class="cap">Playlist</p><h1>Playlist Anda</h1></header><button class="btn pri" data-act="new-pl">${ic('plus')}Playlist baru</button>
+  return `<header class="hd"><p class="cap">Playlist</p><h1>Playlist kamu</h1></header><button class="btn pri" data-act="new-pl">${ic('plus')}Playlist baru</button>
   <div class="list" style="margin-top:16px">${S.pls.map((x) => { const ls = pick(x.songs); const m = ls.slice(0, 4);
     return `<button class="plc" data-act="open-pl" data-id="${x.id}"><span class="mos${m.length < 4 ? ' one' : ''}">${m.length ? (m.length < 4 ? `<img src="${m[0].cover}" alt="">` : m.map((s) => `<img src="${s.cover}" alt="">`).join('')) : ic('list')}</span><span><b>${esc(x.name)}</b><span class="cap">${ls.length} lagu</span></span></button>`; }).join('')}</div>
-  ${S.pls.length ? '' : smallEmpty('list', 'Belum ada playlist', 'Buat playlist untuk mengelompokkan lagu sesuai suasana Anda.')}`;
+  ${S.pls.length ? '' : smallEmpty('list', 'Belum ada playlist', 'Buat playlist untuk mengelompokkan lagu sesuai suasana kamu.')}`;
 }
 function renderRack() {
   const st = rack.scrollTop;
@@ -1019,7 +1019,7 @@ function syncTime() {
   trackStats(c);
   if (lyrOpen) lyrTick(c);
   if (ok && S.cur && !S.cur.dur) { S.cur.dur = d; dbPut(S.cur); }
-  if (S.sleepAt && Date.now() >= S.sleepAt) { S.sleepAt = 0; audio.pause(); toast('Timer tidur selesai. Selamat beristirahat.', { ms: 5000 }); }
+  if (S.sleepAt && Date.now() >= S.sleepAt) { S.sleepAt = 0; audio.pause(); toast('Timer tidur selesai. Selamat istirahat, ya.', { ms: 5000 }); }
   if ('mediaSession' in navigator && ok && Date.now() - lastPos > 1000) {
     lastPos = Date.now(); try { navigator.mediaSession.setPositionState({ duration: d, playbackRate: audio.playbackRate || 1, position: Math.min(c, d) }); } catch (_) {}
   }
@@ -1047,7 +1047,7 @@ function load(auto) {
 function refreshRecent() { /* chip "Terakhir diputar" hanya diperbarui saat kembali ke Ruang Dengar, agar daftar tidak melompat */ }
 function onPlayErr(e) {
   if (!e || e.name === 'AbortError') return;
-  if (e.name === 'NotAllowedError') toast('Ketuk tombol putar untuk memulai.');
+  if (e.name === 'NotAllowedError') toast('Ketuk tombol putar untuk mulai mendengarkan.');
 }
 function next(fromEnd) {
   const n = S.queue.length; if (!n) return; let i = S.qi;
@@ -1076,7 +1076,7 @@ audio.addEventListener('error', () => {
   if (!S.cur || !audio.getAttribute('src')) return;
   S.errRun++;
   const more = S.errRun < S.queue.length;
-  toast(`“${S.cur.title}” tidak bisa diputar (file rusak atau format tidak didukung).${more ? ' Melompat ke lagu berikutnya…' : ''}`, { ms: 4500 });
+  toast(`“${S.cur.title}” tidak bisa diputar (file rusak atau formatnya belum didukung).${more ? ' Lanjut ke lagu berikutnya…' : ''}`, { ms: 4500 });
   if (more) setTimeout(() => next(false), 1200);
 });
 audio.addEventListener('playing', () => { S.errRun = 0; });
@@ -1086,7 +1086,7 @@ audio.addEventListener('seeking', () => { lastC = audio.currentTime; });
 audio.addEventListener('timeupdate', syncTime);
 audio.addEventListener('loadedmetadata', () => { audio.playbackRate = cfg.speed; syncTime(); });
 audio.addEventListener('durationchange', syncTime);
-audio.addEventListener('waiting', () => { if (!audio.paused) toast('Memuat lagu…', { ms: 1200 }); });
+audio.addEventListener('waiting', () => { if (!audio.paused) toast('Menyiapkan lagu…', { ms: 1200 }); });
 audio.addEventListener('ended', () => { if (cfg.rep === 2) { audio.currentTime = 0; audio.play().catch(onPlayErr); } else next(true); });
 /* Crossfade: lagu memudar keluar di ujung dan memudar masuk di awal lagu berikutnya.
    Di iPhone butuh Web Audio (efek audio menyala), karena audio.volume tidak bisa diubah di iOS. */
@@ -1135,7 +1135,7 @@ function ensureGraph() {
       applyEq(); applyVol();
     }
     if (ac.state === 'suspended') ac.resume();
-  } catch (_) { cfg.fx = false; saveCfg(); toast('Efek audio tidak bisa diaktifkan di perangkat ini.'); }
+  } catch (_) { cfg.fx = false; saveCfg(); toast('Efek audio belum bisa dinyalakan di perangkat ini.'); }
 }
 function applyEq() { filters.forEach((f, i) => { f.gain.value = cfg.fx ? cfg.eq[i] : 0; }); }
 
@@ -1188,7 +1188,7 @@ wide.addEventListener('change', () => { now.classList.remove('full'); root.class
 function toggleFav(id) {
   if (!S.byId.has(id)) return;
   const on = !S.fav.has(id); on ? S.fav.add(id) : S.fav.delete(id); saveKV();
-  toast(on ? 'Masuk ke Koleksi Hati' : 'Dihapus dari Koleksi Hati', { ms: 1800 });
+  toast(on ? 'Disimpan ke Koleksi Hati' : 'Dihapus dari Koleksi Hati', { ms: 1800 });
   if (S.view === 'hati') renderRack();
   else $$(`[data-act=fav][data-id="${id}"]`).forEach((b) => { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.innerHTML = ic(on ? 'heart-fill' : 'heart'); });
   syncAll();
@@ -1208,7 +1208,7 @@ function addToPl(pid, sid) {
 }
 async function removeSong(id) {
   const s = S.byId.get(id); if (!s) return;
-  if (!(await ask({ title: 'Hapus lagu dari perpustakaan?', text: `“${s.title}” akan dihapus dari perangkat ini. File aslinya di folder Anda tidak terpengaruh.`, ok: 'Hapus', danger: true }))) return;
+  if (!(await ask({ title: 'Hapus lagu dari perpustakaan?', text: `“${s.title}” akan dihapus dari perangkat ini. File aslinya di folder kamu tidak terpengaruh.`, ok: 'Hapus', danger: true }))) return;
   const wasCur = S.cur && S.cur.id === id;
   S.songs = S.songs.filter((x) => x.id !== id); S.byId.delete(id); S.fav.delete(id);
   S.pls.forEach((p) => { p.songs = p.songs.filter((x) => x !== id); }); S.recent = S.recent.filter((x) => x !== id);
@@ -1261,7 +1261,7 @@ async function importJSON(file) {
     }
     saveKV(); renderAll();
     toast(`Cadangan dipulihkan: ${hit} lagu cocok${miss ? `, ${miss} belum ada di perangkat ini` : ''}${pls ? `, ${pls} playlist baru` : ''}.`, { ms: 6000 });
-  } catch (e) { toast('Cadangan tidak bisa dibaca. Pastikan itu file .json dari Gelombang.', { ms: 5000 }); }
+  } catch (e) { toast('Cadangannya tidak bisa dibaca. Pastikan itu file .json dari Gelombang ya.', { ms: 5000 }); }
 }
 
 /* ============================================================
@@ -1270,7 +1270,7 @@ async function importJSON(file) {
 const mi = (icon, label, act, o = {}) => `<button class="mi${o.danger ? ' danger' : ''}" data-act="${act}"${o.id ? ` data-id="${o.id}"` : ''}${o.v !== undefined ? ` data-v="${o.v}"` : ''}>${ic(icon)}<span>${label}${o.sub ? `<small>${o.sub}</small>` : ''}</span></button>`;
 let dip = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); dip = e; if (S.view === 'home') renderRack(); });
-addEventListener('appinstalled', () => { dip = null; toast('Gelombang sudah terpasang'); renderRack(); });
+addEventListener('appinstalled', () => { dip = null; toast('Gelombang sudah terpasang. Selamat mendengarkan!'); renderRack(); });
 function sheetMain() {
   const themeSeg = `<div class="seg" role="group" aria-label="Tema">${[['auto', 'Otomatis'], ['light', 'Sore'], ['dark', 'Malam']].map(([v, l]) => `<button data-act="theme" data-v="${v}" aria-pressed="${cfg.theme === v}">${l}</button>`).join('')}</div>`;
   openSheet('Lainnya', `<div class="mlist">
@@ -1293,7 +1293,7 @@ function sheetMain() {
 }
 function sheetRecent() {
   const l = pick(S.recent);
-  openSheet('Terakhir diputar', l.length ? `<ul class="list">${l.map(rowHTML).join('')}</ul>` : smallEmpty('clock', 'Belum ada riwayat', 'Lagu yang Anda putar akan muncul di sini.'), { back: sheetMain, re: null });
+  openSheet('Terakhir diputar', l.length ? `<ul class="list">${l.map(rowHTML).join('')}</ul>` : smallEmpty('clock', 'Belum ada riwayat', 'Lagu yang kamu putar akan muncul di sini.'), { back: sheetMain, re: null });
   syncRows();
 }
 function sheetQueue() {
@@ -1347,7 +1347,7 @@ async function sheetStorage() {
   <p class="cap" style="margin-top:10px">${dbOK ? 'Lagu tersimpan di perangkat ini dan tetap ada setelah aplikasi ditutup.' : 'Penyimpanan perangkat tidak aktif; lagu hanya bertahan selama aplikasi terbuka.'}</p>
   <div class="mlist" style="margin-top:14px">${mi('trash', 'Hapus semua data', 'wipe', { danger: true, sub: 'Lagu, favorit, playlist, dan pengaturan' })}</div>`, { back: sheetMain });
   const i = await storageInfo(), b = $('#stbox'); if (!b) return;
-  b.innerHTML = i ? `<div class="meter" role="img" aria-label="Penyimpanan terpakai"><i style="width:${Math.max(1, Math.min(100, i.usage / (i.quota || 1) * 100))}%"></i></div><p class="cap">${bytes(i.usage)} terpakai dari sekitar ${bytes(i.quota)} · sisa ${bytes(Math.max(0, i.quota - i.usage))}</p><p class="cap">Penyimpanan permanen: ${i.persisted ? 'aktif' : 'belum diberikan peramban'}</p>` : '<p class="cap">Perkiraan kapasitas tidak tersedia di peramban ini.</p>';
+  b.innerHTML = i ? `<div class="meter" role="img" aria-label="Penyimpanan terpakai"><i style="width:${Math.max(1, Math.min(100, i.usage / (i.quota || 1) * 100))}%"></i></div><p class="cap">${bytes(i.usage)} terpakai dari sekitar ${bytes(i.quota)} · sisa ${bytes(Math.max(0, i.quota - i.usage))}</p><p class="cap">Penyimpanan permanen: ${i.persisted ? 'aktif' : 'belum diberikan browser'}</p>` : '<p class="cap">Perkiraan kapasitas tidak tersedia di browser ini.</p>';
 }
 async function wipe() {
   if (!(await ask({ title: 'Hapus semua data?', text: 'Semua lagu, favorit, playlist, dan pengaturan di perangkat ini akan dihapus. Tindakan ini tidak bisa dibatalkan.', ok: 'Hapus semua', danger: true }))) return;
@@ -1371,12 +1371,12 @@ function sheetAddPl(id) {
   openSheet('Tambah ke playlist', `<div class="mlist">${S.pls.map((p) => mi(p.songs.includes(id) ? 'check' : 'list', esc(p.name), 'addpl', { id, v: p.id, sub: `${p.songs.length} lagu` })).join('')}${mi('plus', 'Playlist baru…', 'addpl-new', { id })}</div>`, { back: () => sheetSong(id) });
 }
 function sheetAbout() {
-  openSheet('Tentang Gelombang', `<p class="about">Gelombang memutar lagu milik Anda sendiri dari perangkat ini. Tidak ada iklan, pelacak, analitik, akun, atau streaming. Semua lagu dan pengaturan hanya tersimpan di perangkat Anda dan bisa dipakai tanpa internet setelah dipasang.</p><p class="about" style="margin-top:10px">Pintasan keyboard: Spasi putar/jeda · ←/→ geser 5 detik · ↑/↓ volume · N/P lagu berikutnya/sebelumnya · S acak · R ulang.</p>`, { back: sheetMain });
+  openSheet('Tentang Gelombang', `<p class="about">Gelombang memutar lagu milik kamu sendiri dari perangkat ini. Tidak ada iklan, pelacak, analitik, akun, atau streaming. Semua lagu dan pengaturan hanya tersimpan di perangkatmu dan bisa dipakai tanpa internet setelah dipasang.</p><p class="about" style="margin-top:10px">Pintasan keyboard: Spasi putar/jeda · ←/→ geser 5 detik · ↑/↓ volume · N/P lagu berikutnya/sebelumnya · S acak · R ulang.</p>`, { back: sheetMain });
 }
 function sheetInstall() {
   openSheet('Pasang Aplikasi', isIOS
     ? `<p class="about">Agar Gelombang jalan seperti aplikasi di iPhone atau iPad:</p><ol class="steps"><li>Buka halaman ini di <b>Safari</b>.</li><li>Ketuk tombol <b>Bagikan</b> ${ic('share').replace('class="i"', 'class="i" style="display:inline;vertical-align:-5px"')}.</li><li>Pilih <b>Tambah ke Layar Utama</b>, lalu <b>Tambah</b>.</li></ol>`
-    : `<p class="about">Buka menu peramban Anda (⋮), lalu pilih <b>Pasang aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</p>`, { back: sheetMain });
+    : `<p class="about">Buka menu browser kamu (⋮), lalu pilih <b>Pasang aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</p>`, { back: sheetMain });
 }
 async function install() {
   if (dip) { dip.prompt(); try { await dip.userChoice; } catch (_) {} dip = null; closeSheet(); renderRack(); }
@@ -1495,14 +1495,14 @@ function lyrTick(c) {
 }
 async function lyrOnline() {
   const x = S.cur; if (!x || L.busy) return;
-  if (!navigator.onLine) { L.msg = 'Anda sedang offline, jadi lirik tidak bisa dicari. Anda masih bisa menempel lirik atau memuat file .lrc.'; renderLyr(); return; }
+  if (!navigator.onLine) { L.msg = 'Kamu sedang offline, jadi lirik tidak bisa dicari. Kamu masih bisa menempel lirik atau memuat file .lrc.'; renderLyr(); return; }
   L.busy = true; L.msg = ''; renderLyr();
   let res = null, err = null;
   try { res = await lrclib(x); } catch (e) { err = e; }
   const same = S.cur && S.cur.id === x.id;
   if (same) L.busy = false;
-  if (err) { if (same) L.msg = err.name === 'AbortError' ? 'Pencarian melewati batas waktu. Coba lagi nanti, atau tempel lirik / muat file .lrc.' : 'LRCLIB tidak bisa dihubungi. Periksa koneksi Anda, atau tempel lirik / muat file .lrc.'; }
-  else if (!res) { if (same) L.msg = `Lirik “${x.title}” tidak ditemukan di LRCLIB. Anda bisa menempel lirik atau memuat file .lrc sendiri.`; }
+  if (err) { if (same) L.msg = err.name === 'AbortError' ? 'Pencarian melewati batas waktu. Coba lagi nanti, atau tempel lirik / muat file .lrc.' : 'LRCLIB tidak bisa dihubungi. Periksa koneksi kamu, atau tempel lirik / muat file .lrc.'; }
+  else if (!res) { if (same) L.msg = `Lirik “${x.title}” tidak ditemukan di LRCLIB. Kamu bisa menempel lirik atau memuat file .lrc sendiri.`; }
   else if (res.instrumental) { if (same) L.msg = 'LRCLIB menandai lagu ini sebagai instrumental (tanpa lirik).'; }
   else { await putLyr({ id: x.id, text: res.text, src: 'LRCLIB (lrclib.net)' }); toast('Lirik ditemukan di LRCLIB'); }
   if (same) renderLyr();
@@ -1516,7 +1516,7 @@ async function lyrSave() {
 }
 async function lyrDelete() {
   const x = S.cur; if (!x) return;
-  if (!(await ask({ title: 'Hapus lirik lagu ini?', text: 'Lirik dihapus dari perangkat. Anda bisa menambahkannya lagi kapan saja.', ok: 'Hapus lirik', danger: true }))) return;
+  if (!(await ask({ title: 'Hapus lirik lagu ini?', text: 'Lirik dihapus dari perangkat. Kamu bisa menambahkannya lagi kapan saja.', ok: 'Hapus lirik', danger: true }))) return;
   await delLyr(x.id); L.msg = ''; renderLyr(); toast('Lirik dihapus');
 }
 fLrc.addEventListener('change', async () => {
@@ -1591,7 +1591,7 @@ const A = {
   speed: (el) => { cfg.speed = +el.dataset.v; audio.playbackRate = cfg.speed; saveCfg(); sheetTools(); },
   sleep: (el) => {
     const m = +el.dataset.v; clearTimeout(A._st);
-    S.sleepAt = m ? Date.now() + m * 60000 : 0; if (m) A._st = setTimeout(() => { if (S.sleepAt && Date.now() >= S.sleepAt - 500) { S.sleepAt = 0; audio.pause(); toast('Timer tidur selesai. Selamat beristirahat.', { ms: 5000 }); } }, m * 60000);
+    S.sleepAt = m ? Date.now() + m * 60000 : 0; if (m) A._st = setTimeout(() => { if (S.sleepAt && Date.now() >= S.sleepAt - 500) { S.sleepAt = 0; audio.pause(); toast('Timer tidur selesai. Selamat istirahat, ya.', { ms: 5000 }); } }, m * 60000);
     toast(m ? `Musik berhenti dalam ${m} menit` : 'Timer tidur dimatikan', { ms: 1800 }); sheetTools();
   },
   'q-play': (el) => { S.hist.push(S.qi); S.qi = +el.dataset.i; load(true); },
@@ -1699,7 +1699,7 @@ if ('serviceWorker' in navigator) {
       reg.addEventListener('updatefound', () => {
         const w = reg.installing; if (!w) return;
         w.addEventListener('statechange', () => {
-          if (w.state === 'installed' && navigator.serviceWorker.controller) toast('Versi baru Gelombang siap.', { action: 'Muat ulang', sticky: true, fn: () => { wantReload = true; w.postMessage('SKIP_WAITING'); } });
+          if (w.state === 'installed' && navigator.serviceWorker.controller) toast('Ada versi baru Gelombang, siap dipakai.', { action: 'Muat ulang', sticky: true, fn: () => { wantReload = true; w.postMessage('SKIP_WAITING'); } });
         });
       });
     }).catch(() => {});

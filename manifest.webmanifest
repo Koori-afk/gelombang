@@ -2,21 +2,22 @@
   "id": "./",
   "name": "Gelombang – Ruang Dengar",
   "short_name": "Gelombang",
-  "description": "Pemutar musik pribadi untuk lagu milik Anda sendiri. Tanpa iklan, tanpa pelacak, jalan offline.",
+  "description": "Pemutar musik pribadi untuk lagu milikmu sendiri. Tanpa iklan, tanpa pelacak, jalan tanpa internet.",
   "lang": "id",
   "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#1E1511",
   "theme_color": "#1E1511",
   "categories": ["music", "entertainment"],
+  "prefer_related_applications": false,
   "icons": [
-    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
